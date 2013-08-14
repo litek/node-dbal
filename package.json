@@ -1,0 +1,25 @@
+{
+  "name": "dbal",
+  "version": "0.0.1",
+  "author": "Ketil Albertsen",
+  "main": "src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/litek/node-dbal.git"
+  },
+  "homepage": "https://github.com/litek/node-dbal",
+  "devDependencies": {
+    "mocha": "~1.12.0",
+    "should": "~1.2.2",
+    "grunt-contrib-jshint": "~0.6.2",
+    "grunt": "~0.4.1",
+    "mysql": "~2.0.0-alpha8",
+    "pg": "~2.3.1"
+  },
+  "dependencies": {
+    "sql": "~0.26.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  }
+}
