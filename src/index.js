@@ -1,6 +1,7 @@
 var pg = require("pg"),
     table = require("./table"),
-    Query = require("../node_modules/sql/lib/node/query");
+    Query = require("../node_modules/sql/lib/node/query"),
+    Q = require("q");
 
 module.exports = function(config) {
   var tables = {};
@@ -17,10 +18,23 @@ module.exports = function(config) {
   };
 
   db.acquire = function(callback) {
-    pg.connect(config, callback);
+    var deferred = Q.defer();
+
+    pg.connect(config, function(err, connection, release) {
+      if (err) {
+        deferred.reject(err);
+      } else {
+        connection.release = release;
+        deferred.resolve(connection);
+      }
+    });
+
+    return deferred.promise.nodeify(callback);
   };
 
   db.query = function(query, params, callback) {
+    var deferred = Q.defer();
+
     if (typeof(params) === "function") {
       callback = params;
       params = [];
@@ -32,14 +46,20 @@ module.exports = function(config) {
       params = extract.values;
     }
 
-    pg.connect(config, function(err, connection, release) {
-      if (err) return callback(err);
+    pg.connect(config, function(err, connection) {
+      if (err) return deferred.reject(err);
 
       connection.query(query, params, function(err, res) {
-        release();
-        callback(err, res);
+        connection.release();
+        if (err) {
+          deferred.reject(err);
+        } else {
+          deferred.resolve(res);
+        }
       });
     });
+
+    return deferred.promise.nodeify(callback);
   };
 
   return db;

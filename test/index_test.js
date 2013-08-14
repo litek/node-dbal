@@ -11,11 +11,19 @@ describe("Index", function() {
   });
 
   it("returns connection", function(done) {
-    this.db.acquire(function(err, client, release) {
+    this.db.acquire(function(err, client) {
       should.not.exist(err);
       client.should.be.instanceof(pg.Client);
-      release.should.be.a("function");
-      release();
+      client.release.should.be.a("function");
+      client.release();
+      done();
+    });
+  });
+
+  it("promises connection", function(done) {
+    this.db.acquire().then(function(client) {
+      client.should.be.instanceof(pg.Client);
+      client.release();
       done();
     });
   });
@@ -23,10 +31,17 @@ describe("Index", function() {
   it("runs query and return", function(done) {
     this.db.query("SELECT 'bar' AS foo", function(err, res) {
       should.not.exist(err);
-      res.should.have.property("rows");
-      res.rows.should.have.length(1);
+      res.should.have.property("rows").and.have.length(1);
       res.rows[0].should.have.keys("foo");
       res.rows[0].foo.should.equal("bar");
+      done();
+    });
+  });
+
+  it("runs query with promise", function(done) {
+    this.db.query("SELECT 'bar' AS foo").then(function(res) {
+      res.should.have.property("rows").and.have.length(1);
+      res.rows[0].should.have.property("foo").and.equal("bar");
       done();
     });
   });

@@ -18,9 +18,9 @@ db.query("SELECT 'bar' AS foo", function(err, res) {
   // res.rows[0].foo equals bar
 });
 
-db.acquire(function(err, connection, release) {
+db.acquire(function(err, connection) {
   // use connection..
-  release();
+  connection.release();
 });
 
 var users = db("users");
@@ -52,7 +52,7 @@ Returns new sql builder instance for table.
 Adds a .run method to execute queries directly.
 
 ### instance.acquire(callback)
-Acquires connection from pool. Returns client and callback to return connection to pool.
+Acquires connection from pool. Returns client with callback to return connection to pool.
 
 ### instance.query(query, [params], callback)
 Executes query and returns result, releasing connection back to the pool.

@@ -1,6 +1,6 @@
 {
   "name": "dbal",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Ketil Albertsen",
   "main": "src/index.js",
   "repository": {
@@ -17,7 +17,8 @@
     "pg": "~2.3.1"
   },
   "dependencies": {
-    "sql": "~0.26.0"
+    "sql": "~0.26.0",
+    "q": "~0.9.6"
   },
   "scripts": {
     "test": "mocha"
