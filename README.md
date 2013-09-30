@@ -26,7 +26,7 @@ db.acquire(function(err, connection) {
 var users = db("users");
 var query = users.select().where({id: 1});
 
-query.run(function(err, res) {
+query.exec(function(err, res) {
   // returning result for "SELECT * FROM users WHERE id = 1"
 });
 
@@ -39,7 +39,7 @@ db.query(query, function(err, res) {
 db("quotes")
   .insert({author: "Caesar", quote: "Veni, vidi, vici"})
   .returning("id")
-  .run(function(err, res) {
+  .exec(function(err, res) {
     // assuming id is a sequence, res.rows[0].id is the generated value
 });
 
@@ -49,7 +49,7 @@ db("quotes")
 
 ### instance(table, [columns])
 Returns new sql builder instance for table.
-Adds a .run method to execute queries directly.
+Adds a .exec method to execute queries directly.
 
 ### instance.acquire(callback)
 Acquires connection from pool. Returns client with callback to return connection to pool.

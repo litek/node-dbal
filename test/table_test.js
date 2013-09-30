@@ -23,7 +23,7 @@ describe("Table", function() {
       }
     };
 
-    table(connection, "users").select().run(function(query) {
+    table(connection, "users").select().exec(function(query) {
       query.should.be.instanceof(Query);
       done();
     });

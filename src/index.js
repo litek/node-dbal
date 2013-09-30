@@ -24,7 +24,10 @@ module.exports = function(config) {
       if (err) {
         deferred.reject(err);
       } else {
-        connection.release = release;
+        connection.release = function() {
+          delete connection.release;
+          release();
+        };
         deferred.resolve(connection);
       }
     });
@@ -46,11 +49,11 @@ module.exports = function(config) {
       params = extract.values;
     }
 
-    pg.connect(config, function(err, connection) {
+    pg.connect(config, function(err, connection, release) {
       if (err) return deferred.reject(err);
 
       connection.query(query, params, function(err, res) {
-        connection.release();
+        release();
         if (err) {
           deferred.reject(err);
         } else {
