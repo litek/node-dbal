@@ -3,8 +3,13 @@ var sql = require("sql"),
 
 // add run function to execute queries directly
 Node.prototype.exec =
-Node.prototype.execute = function(callback) {
-  return this.table.__connection.query(this, callback);
+Node.prototype.execute = function(connection, callback) {
+  if (!callback) {
+    callback = connection;
+    connection = this.table.__connection;
+  }
+
+  return connection.query(this, callback);
 };
 
 // dynamically add columns to query builder
