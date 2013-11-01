@@ -48,7 +48,7 @@ module.exports = function(config) {
       };
 
       client.commit = function(cb) {
-        return client.query("COMMIT", function() {
+        return client.query("COMMIT").then(function() {
           client.release();
           if (cb) cb();
         });

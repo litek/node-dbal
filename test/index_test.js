@@ -72,7 +72,7 @@ describe("Index", function() {
       res.should.have.property("rows").and.have.length(1);
       res.rows[0].should.have.property("foo").and.equal("bar");
       
-      client.commit(function() {
+      client.commit().then(function() {
         client.activeQuery.text.should.equal("COMMIT");
       });
     });
