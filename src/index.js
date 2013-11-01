@@ -1,7 +1,9 @@
 var pg = require("pg"),
     table = require("./table"),
-    Query = require("../node_modules/sql/lib/node/query"),
+    Query = require("sql/lib/node/query"),
     deferred = require("deferred");
+
+require("./client");
 
 module.exports = function(config) {
   var tables = {};
@@ -31,6 +33,31 @@ module.exports = function(config) {
         def.resolve(connection);
       }
     });
+
+    return def.promise.cb(callback);
+  };
+
+  db.transaction = function(callback) {
+    var def = deferred(), client;
+
+    db.acquire().then(function(conn) {
+      client = conn;
+
+      client.rollback = function(cb) {
+        return client.query("ROLLBACK", cb);
+      };
+
+      client.commit = function(cb) {
+        return client.query("COMMIT", function() {
+          client.release();
+          if (cb) cb();
+        });
+      };
+
+      return client.query("BEGIN TRANSACTION");
+    }).then(function(trans) {
+      def.resolve(client);
+    }).catch(def.reject);
 
     return def.promise.cb(callback);
   };

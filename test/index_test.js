@@ -46,6 +46,38 @@ describe("Index", function() {
     });
   });
 
+  it("runs connection queries with promise", function(done) {
+    this.db.acquire(function(err, client) {
+      client.query("SELEcT 'foo'").then(function(res) {
+        res.should.have.property("rows").and.have.length(1);
+        done();
+      });
+    });
+  });
+
+  it("creates and commits transaction, releasing connection", function(done) {
+    var client, release;
+
+    this.db.transaction().then(function(conn) {
+      client = conn, release = client.release;
+      client.release = function() {
+        release();
+        done();
+      };
+
+      client.activeQuery.text.should.equal("BEGIN TRANSACTION");
+    }).then(function() {
+      return client.query("SELECT 'bar' AS foo");
+    }).then(function(res) {
+      res.should.have.property("rows").and.have.length(1);
+      res.rows[0].should.have.property("foo").and.equal("bar");
+      
+      client.commit(function() {
+        client.activeQuery.text.should.equal("COMMIT");
+      });
+    });
+  });
+
   it("creates sql tables", function() {
     var users = this.db("users");
     users.should.be.instanceof(sql.Table);
