@@ -43,6 +43,18 @@ db("quotes")
     // assuming id is a sequence, res.rows[0].id is the generated value
 });
 
+// transaction using promises
+var client;
+db.transaction()
+  .then(function(conn) {
+    client = conn;
+    return db("authors").insert({name: "Herman Hesse"}).returning("id").exec(client);
+  })
+  .then(function(query) {
+    var author_id = query.rows[0].id;
+    return db("works").insert({author_id: author_id, title: "Das Glasperlenspiel"}).exec(client);
+  })
+  .then(client.commit);
 ```
 
 ## Methods
@@ -56,3 +68,13 @@ Acquires connection from pool. Returns client with callback to return connection
 
 ### instance.query(query, [params], callback)
 Executes query and returns result, releasing connection back to the pool.
+
+### instance.transaction(callback)
+Acquires connection and begins transaction.
+Adds two methods to the connection
+
+### connection.commit(callback)
+Commits the transaction, releasing connection back into the connection pool
+
+### connection.rollback()
+Rollback transaction, releasing connection back into the connection pool

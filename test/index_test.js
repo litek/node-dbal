@@ -59,7 +59,9 @@ describe("Index", function() {
     var client, release;
 
     this.db.transaction().then(function(conn) {
-      client = conn, release = client.release;
+      client = conn;
+      release = client.release;
+      
       client.release = function() {
         release();
         done();

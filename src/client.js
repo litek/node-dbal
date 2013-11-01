@@ -1,3 +1,6 @@
+/*jshint
+  expr: true
+*/
 var Client = require("pg/lib/client"),
     deferred = require("deferred");
 
@@ -12,5 +15,5 @@ Client.prototype.query = function() {
 
   query.apply(this, args);
 
-  return defer.promise.cb(callback)
+  return defer.promise.cb(callback);
 };

@@ -44,7 +44,10 @@ module.exports = function(config) {
       client = conn;
 
       client.rollback = function(cb) {
-        return client.query("ROLLBACK", cb);
+        return client.query("ROLLBACK").then(function() {
+          client.release();
+          if (cb) cb();
+        });
       };
 
       client.commit = function(cb) {
