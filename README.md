@@ -54,7 +54,9 @@ db.transaction()
     var author_id = query.rows[0].id;
     return db("works").insert({author_id: author_id, title: "Das Glasperlenspiel"}).exec(client);
   })
-  .then(client.commit);
+  .then(function() {
+    client.commit();
+  });
 ```
 
 ## Methods
