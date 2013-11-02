@@ -1,6 +1,3 @@
-/*jshint
-  expr: true
-*/
 var Client = require("pg/lib/client"),
     deferred = require("deferred");
 
