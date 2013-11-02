@@ -1,11 +1,15 @@
 var sql = require("sql"),
-    Node = require("../node_modules/sql/lib/node/index");
+    Node = require("sql/lib/node/index");
 
 // add run function to execute queries directly
 Node.prototype.exec =
 Node.prototype.execute = function(connection, callback) {
-  if (!callback) {
+  if (!callback && connection && typeof(connection.query) !== "function") {
     callback = connection;
+    connection = null;
+  }
+
+  if (!connection) {
     connection = this.table.__connection;
   }
 
