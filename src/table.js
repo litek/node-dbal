@@ -13,7 +13,10 @@ Node.prototype.execute = function(connection, callback) {
     connection = this.table.__connection;
   }
 
-  return connection.query(this, callback);
+  var query = this.toQuery(), args = [query.text, query.values];
+  if (callback) args.push(callback);
+
+  return connection.query.apply(connection, args);
 };
 
 // dynamically add columns to query builder
