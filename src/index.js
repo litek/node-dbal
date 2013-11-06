@@ -1,99 +1,171 @@
-var pg = require("pg"),
-    table = require("./table"),
-    Query = require("sql/lib/node/query"),
-    deferred = require("deferred");
+var deferred = require("deferred"),
+    pg = require("pg"),
+    sql = require("sql");
 
+// apply dependency modifications
 require("./client");
+require("./node");
 
 module.exports = function(config) {
-  var tables = {};
+  return new DBAL(config);
+};
 
-  // return new sql builder for table
-  var db = function(name, columns) {
-    if (typeof(tables[name]) === "undefined") {
-      tables[name] = table(db, name, columns);
-    } else if (typeof(columns) !== "undefined") {
-      throw new Error("Table " + name + " has already been defined");
-    }
+var DBAL = function(config) {
+  this.config = config;
+  this.tables = {};
+  this.models = {};
+};
 
-    return tables[name];
-  };
+/**
+ * Acquire connection from pool
+ */
+DBAL.prototype.acquire = function(callback) {
+  var defer = deferred();
 
-  db.acquire = function(callback) {
-    var def = deferred();
+  pg.connect(this.config, function(err, connection, release) {
+    if (err) return defer.reject(err);
 
-    pg.connect(config, function(err, connection, release) {
-      if (err) {
-        def.reject(err);
-      } else {
-        connection.release = function() {
-          delete connection.release;
-          release();
-        };
-        def.resolve(connection);
-      }
+    connection.release = function() {
+      delete connection.release;
+      release();
+    };
+
+    defer.resolve(connection);
+  });
+
+  return defer.promise.cb(callback);
+};
+
+/**
+ * Run query and return client to pool
+ */
+DBAL.prototype.query = function(query, params, callback) {
+  var client;
+
+  if (typeof(params) === "function") {
+    callback = params;
+    params = [];
+  }
+
+  var promise = this
+    .acquire()
+    .then(function(conn) {
+      client = conn;
+      return client.query(query, params || []);
+    })
+    .then(function(query) {
+      client.release();
+      return callback ? callback(null, query) : query;
+    })
+    .catch(function(err) {
+      if (client && client.release) client.release();
+      if (callback) return callback(err);
+      throw err;
     });
 
-    return def.promise.cb(callback);
-  };
+  return promise;
+};
 
-  db.transaction = function(callback) {
-    var def = deferred(), client;
+/**
+ * Fetch a single row
+ */
+DBAL.prototype.fetchOne = function(query, params, callback) {
+  var client;
 
-    db.acquire().then(function(conn) {
+  if (typeof(params) === "function") {
+    callback = params;
+    params = [];
+  }
+
+  var promise = this
+    .query(query, params)
+    .then(function(query) {
+      var res = query.rowCount > 0 ? query.rows[0] : null;
+      return callback ? callback(null, res) : res;
+    });
+
+  if (callback) promise.catch(callback);
+
+  return promise;
+};
+
+/**
+ * Fetch all rows as array
+ */
+DBAL.prototype.fetchAll = function(query, params, callback) {
+  var client;
+
+  if (typeof(params) === "function") {
+    callback = params;
+    params = [];
+  }
+
+  var promise = this
+    .query(query, params)
+    .then(function(query) {
+      return callback ? callback(null, query.rows) : query.rows;
+    });
+
+  if (callback) promise.catch(callback);
+
+  return promise;
+};
+
+/**
+ * Start transaction
+ */
+DBAL.prototype.transaction = function(callback) {
+  var promise = this
+    .acquire()
+    .then(function(conn) {
       client = conn;
 
-      client.rollback = function(cb) {
-        return client.query("ROLLBACK").then(function() {
-          client.release();
-          if (cb) cb();
-        });
-      };
-
-      client.commit = function(cb) {
-        return client.query("COMMIT").then(function() {
-          client.release();
-          if (cb) cb();
-        });
-      };
+      // convenience functions
+      ["rollback", "commit"].forEach(function(name) {
+        client[name] = function(cb) {
+          return client.query(name.toUpperCase()).then(function() {
+            client.release();
+            if (cb) cb();
+          });
+        };
+      });
 
       return client.query("BEGIN TRANSACTION");
-    }).then(function(trans) {
-      def.resolve(client);
-    }).catch(def.reject);
-
-    return def.promise.cb(callback);
-  };
-
-  db.query = function(query, params, callback) {
-    var def = deferred();
-
-    if (typeof(params) === "function") {
-      callback = params;
-      params = [];
-    }
-
-    if (query instanceof Query) {
-      var extract = query.toQuery();
-      query = extract.text;
-      params = extract.values;
-    }
-
-    pg.connect(config, function(err, connection, release) {
-      if (err) return def.reject(err);
-
-      connection.query(query, params, function(err, res) {
-        release();
-        if (err) {
-          def.reject(err);
-        } else {
-          def.resolve(res);
-        }
-      });
+    })
+    .then(function() {
+      return client;
     });
 
-    return def.promise.cb(callback);
-  };
+  if (callback) promise.catch(callback);
 
-  return db;
+  return promise;
+};
+
+/**
+ * Define/retrieve table
+ */
+DBAL.prototype.table = function(name) {
+  var table;
+
+  if (typeof(name) !== "string") {
+    var config = name;
+    name = config.name;
+
+    if (typeof(this.tables[name]) !== "undefined") {
+      throw new Error("Table '"+name+"' is already defined");
+    }
+
+    table = sql.define(config);
+    table.__connection = this;
+    this.tables[name] = table;
+
+  } else {
+    if (typeof(this.tables[name]) === "undefined") {
+      throw new Error("Table '"+name+"' is undefined");
+    }
+
+    table = this.tables[name];
+  }
+
+  return table;
 };
