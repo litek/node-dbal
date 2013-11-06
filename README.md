@@ -125,5 +125,5 @@ Adds two methods to the connection
 #### connection.commit(callback)
 Commits the transaction, releasing connection back into the connection pool
 
-#### connection.rollback()
+#### connection.rollback(callback)
 Rollback transaction, releasing connection back into the connection pool
