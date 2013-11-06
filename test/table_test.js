@@ -1,7 +1,6 @@
 var should = require("should"),
     table = require("../src/table"),
-    Column = require("../node_modules/sql/lib/column"),
-    Query = require("../node_modules/sql/lib/node/query");
+    Column = require("../node_modules/sql/lib/column");
 
 describe("Table", function() {
   it("adds columns dynamically", function() {
@@ -18,13 +17,14 @@ describe("Table", function() {
 
   it("executes queries", function(done) {
     var connection = {
-      query: function(query, cb) {
-        cb(query);
+      query: function(query, args, cb) {
+        cb(query, args);
       }
     };
 
-    table(connection, "users").select().exec(function(query) {
-      query.should.be.instanceof(Query);
+    table(connection, "users").select().exec(function(query, args) {
+      query.should.be.a.String;
+      args.should.be.an.instanceof.Array;
       done();
     });
   });
