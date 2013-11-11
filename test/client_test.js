@@ -1,3 +1,5 @@
+"use strict";
+
 var pg = require("pg");
 require("../src/client");
 

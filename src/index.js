@@ -1,3 +1,5 @@
+"use strict";
+
 var deferred = require("deferred"),
     pg = require("pg"),
     sql = require("sql");
@@ -115,6 +117,8 @@ DBAL.prototype.fetchAll = function(query, params, callback) {
  * Start transaction
  */
 DBAL.prototype.transaction = function(callback) {
+  var client;
+  
   var promise = this
     .acquire()
     .then(function(conn) {

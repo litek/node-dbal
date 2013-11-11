@@ -1,3 +1,5 @@
+"use strict";
+
 var Node = require("sql/lib/node/index"),
     Table = require("sql/lib/table");
 
@@ -12,7 +14,7 @@ Node.prototype.query = function(connection, callback) {
     connection = this.table.__connection;
   }
 
-  args = [this];
+  var args = [this];
   if (callback) args.push(callback);
 
   return connection.query.apply(connection, args);

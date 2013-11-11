@@ -1,3 +1,5 @@
+"use strict";
+
 module.exports = function(grunt) {
   grunt.loadNpmTasks("grunt-contrib-jshint");
 
@@ -5,7 +7,14 @@ module.exports = function(grunt) {
     jshint: {
       options: {
         node: true,
-        expr: true
+        expr: true,
+        globalstrict: true,
+        globals: {
+          describe: false,
+          it: false,
+          before: true,
+          beforeEach: true
+        }
       },
       files: ["Gruntfile.js", "src/*.js", "test/*.js"]
     }

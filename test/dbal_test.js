@@ -1,3 +1,5 @@
+"use strict";
+
 var should = require("should"),
     pg = require("pg"),
     sql = require("sql"),

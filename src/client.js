@@ -1,3 +1,5 @@
+"use strict";
+
 var deferred = require("deferred"),
     Client = require("pg/lib/client"),
     Query = require("sql/lib/node/query");

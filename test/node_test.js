@@ -1,3 +1,5 @@
+"use strict";
+
 var dbal = require("../src/index"),
     sql = require("sql");
 
