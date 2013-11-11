@@ -88,11 +88,11 @@ db.table({
 db.transaction()
   .then(function(conn) {
     client = conn;
-    return db("authors").insert({name: "Herman Hesse"}).returning("id").fetchOne(client);
+    return db.table("authors").insert({name: "Herman Hesse"}).returning("id").fetchOne(client);
   })
   .then(function(row) {
     var author_id = row.id;
-    return db("works").insert({author_id: author_id, title: "Das Glasperlenspiel"}).query(client);
+    return db.table("works").insert({author_id: author_id, title: "Das Glasperlenspiel"}).query(client);
   })
   .then(function() {
     client.commit();
