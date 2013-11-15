@@ -16,7 +16,10 @@ Client.prototype.query = function() {
     args[0] = builder.text, args[1] = builder.values;
   }
 
+  var client = this;
   args.push(function(err, res) {
+    if (err) err.query = {text: args[0], values: args[1]};
+    if (process.env.NODE_ENV === "test") client.lastQuery = err ? err.query.text : res.command;
     err ? defer.reject(err) : defer.resolve(res);
   });
 

@@ -9,6 +9,7 @@ var should = require("should"),
 describe("DBAL", function() {
   before(function() {
     this.db = dbal(process.env.DATABASE_URL);
+    process.env.NODE_ENV = "test";
   });
 
   describe("acquire", function() {
@@ -16,7 +17,7 @@ describe("DBAL", function() {
       this.db.acquire(function(err, client) {
         should.not.exist(err);
         client.should.be.instanceof(pg.Client);
-        client.release.should.be.a("function");
+        client.release.should.be.type("function");
         client.release();
         done();
       });
@@ -99,7 +100,7 @@ describe("DBAL", function() {
       this.db.transaction()
         .then(function(conn) {
           client = conn;
-          client.activeQuery.text.should.equal("BEGIN TRANSACTION");
+          client.lastQuery.should.equal("BEGIN");
 
           return client.query("SELECT 'bar' AS foo");
         })
@@ -109,7 +110,7 @@ describe("DBAL", function() {
           
           client.commit().then(function() {
             should.not.exist(client.release);
-            client.activeQuery.text.should.equal("COMMIT");
+            client.lastQuery.should.equal("COMMIT");
             done();
           });
         })
