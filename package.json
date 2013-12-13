@@ -1,6 +1,6 @@
 {
   "name": "dbal",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "Ketil Albertsen",
   "main": "src/index.js",
   "repository": {
@@ -16,7 +16,7 @@
     "pg": "~2.8.0"
   },
   "dependencies": {
-    "sql": "~0.31.0",
+    "sql": "~0.34.0",
     "deferred": "~0.6.0"
   },
   "peerDependencies": {
