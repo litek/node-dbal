@@ -8,6 +8,7 @@ module.exports = function(grunt) {
       options: {
         node: true,
         expr: true,
+        proto: true,
         globalstrict: true,
         globals: {
           describe: false,

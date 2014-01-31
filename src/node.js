@@ -1,44 +1,18 @@
 "use strict";
-
-var Node = require("sql/lib/node/index"),
-    Table = require("sql/lib/table");
+var Node = require("sql/lib/node/index");
 
 // execute query directly
-Node.prototype.query = function(connection, callback) {
-  if (!callback && connection && typeof(connection.query) !== "function") {
-    callback = connection;
-    connection = null;
+Node.prototype.exec = function(dbal, cb) {
+  var query = this.toQuery();
+
+  if (!cb && dbal && typeof(dbal.query) !== "function") {
+    cb = dbal;
+    dbal = undefined;
   }
 
-  if (!connection) {
-    connection = this.table.__connection;
+  if (!dbal) {
+    dbal = this.table.__dbal;
   }
 
-  var args = [this];
-  if (callback) args.push(callback);
-
-  return connection.query.apply(connection, args);
-};
-
-// fetch single row
-Node.prototype.fetchOne = function(connection, callback) {
-  var promise = this.query(connection).then(function(query) {
-    var res = query.rowCount > 0 ? query.rows[0] : null;
-    return callback ? callback(null, res) : res;
-  });
-
-  if (callback) promise.catch(callback);
-
-  return promise;
-};
-
-// fetch rows array
-Node.prototype.fetchAll = function(connection, callback) {
-  var promise = this.query(connection).then(function(query) {
-    return callback ? callback(null, query.rows) : query.rows;
-  });
-
-  if (callback) promise.catch(callback);
-
-  return promise;
+  return dbal.query(query.text, query.params, cb);
 };

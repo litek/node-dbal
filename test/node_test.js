@@ -14,7 +14,7 @@ describe("sql.Node", function() {
 
   describe("query", function() {
     it("executes query directly", function(done) {
-      this.table.select().query(this.db).catch(function(err) {
+      this.table.select().exec(this.db).catch(function(err) {
         err.code.should.equal("42P01");
         done();
       });
