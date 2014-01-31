@@ -28,7 +28,7 @@ sql.exec().then(function(res) {
   // returning result for "SELECT * FROM users WHERE id = 1"
 });
 
-// can also be passed to dbal.query
+// can also be passed to dbal().query
 db.query(sql).then(function(err, res) {
   // returning result for "SELECT * FROM users WHERE id = 1"
 });
@@ -43,13 +43,13 @@ quotes
   .insert({author: "Caesar", quote: "Veni, vidi, vici"})
   .returning("id")
   .exec()
-  .then(function(err, res) {
+  .then(function(res) {
     // assuming id is a sequence, res.rows[0].id is the generated value
   });
 ```
 
 ## Methods
-All callback methods are also promises.
+Callback methods are also promises.
 
 ### instance(config)
 Alias for instance.table
@@ -57,5 +57,9 @@ Alias for instance.table
 ### instance.table(config)
 Returns new sql builder instance for table.
 
+#### table.exec([dbal], [callback])
+Executes query and returns result, releasing connection back to the pool.
+
 ### instance.query(query, [params], [callback])
 Executes query and returns result, releasing connection back to the pool.
+
