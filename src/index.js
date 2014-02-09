@@ -59,6 +59,37 @@ DBAL.prototype.query = function(query, params, cb) {
 };
 
 /**
+ * Get transaction
+ */
+DBAL.prototype.transaction = function(cb) {
+  var defer = promise.defer();
+
+  pg.connect(this.config, function(err, client, done) {
+    client.release = done;
+
+    client.commit = function() {
+      return client.query("COMMIT").then(function(res) {
+        client.release();
+        return res;
+      });
+    };
+
+    client.rollback = function() {
+      return client.query("ROLLBACK").then(function(res) {
+        client.release();
+        return res;
+      });
+    };
+
+    client.query = promise.promisify(client.query, client);
+
+    defer.resolve(client);
+  });
+
+  return defer.promise.nodeify(cb);
+};
+
+/**
  * Define/retrieve table
  *
  * @param {string|object} config
@@ -96,8 +127,9 @@ DBAL.prototype.table = function(config) {
  * @param {DBAL} [dbal]
  * @param {function} [cb]
  */
+var cls = require("pg/lib/client");
 Node.prototype.exec = function(dbal, cb) {
-  if (!cb && dbal && !(dbal instanceof DBAL)) {
+  if (!cb && dbal && !(dbal instanceof DBAL) && !(dbal instanceof cls)) {
     cb = dbal;
     dbal = undefined;
   }
@@ -106,5 +138,6 @@ Node.prototype.exec = function(dbal, cb) {
     dbal = this.table.__dbal;
   }
 
-  return dbal.query(this, cb);
+  var q = this.toQuery();
+  return dbal.query(q.text, q.values, cb);
 };

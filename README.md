@@ -63,3 +63,5 @@ Executes query and returns result, releasing connection back to the pool.
 ### instance.query(query, [params], [callback])
 Executes query and returns result, releasing connection back to the pool.
 
+### instance.transaction()
+Returns pg client for transaction use.

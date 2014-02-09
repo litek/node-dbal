@@ -32,6 +32,23 @@ describe("DBAL", function() {
     });
   });
 
+  describe("transaction", function() {
+    it("returns transaction client", function(done) {
+      var client;
+
+      this.db.transaction().then(function(conn) {
+        client = conn;
+        return client.query("SELECT 'bar' AS foo");
+      }).then(function(res) {
+        res.rows[0].should.have.properties("foo");
+        return client.commit();
+      }).then(function(res) {
+        res.command.should.equal("COMMIT");
+        done();
+      });
+    });
+  });
+
   describe("table", function() {
     var table;
 
