@@ -19,5 +19,14 @@ describe("sql.Node", function() {
         done();
       });
     });
+
+    it("is yieldable promise", function(done) {
+      this.table.__dbal = this.db;
+
+      this.table.select().then(function() {}, function(err) {
+        err.code.should.equal("42P01");
+        done();
+      });
+    });
   });
 });

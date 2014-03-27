@@ -141,3 +141,12 @@ Node.prototype.exec = function(dbal, cb) {
   var q = this.toQuery();
   return dbal.query(q.text, q.values, cb);
 };
+
+/**
+ * Direct promise call
+ */
+Node.prototype.then = function() {
+  var promise = this.exec();
+
+  return promise.then.apply(promise, arguments);
+};
