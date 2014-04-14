@@ -14,6 +14,7 @@ describe("DBAL", function() {
 
   it("exposes sql", function() {
     dbal.sql.should.equal(sql);
+    this.db.sql.should.equal(sql);
   });
 
   describe("query", function() {

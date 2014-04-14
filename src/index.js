@@ -23,6 +23,9 @@ var dbal = module.exports = function(config) {
 
 dbal.sql = sql;
 
+DBAL.prototype.sql = sql;
+
+
 /**
  * Run query and return connection to pool
  *

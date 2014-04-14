@@ -54,11 +54,11 @@ Callback methods are also promises.
 ### instance(config)
 Alias for instance.table
 
-### instance.table(config)
-Returns new sql builder instance for table.
-
 ### instance.sql
 Get [sql object](https://github.com/brianc/node-sql)
+
+### instance.table(config)
+Returns new sql builder instance for table.
 
 #### table.exec([dbal], [callback])
 Executes query and returns result, releasing connection back to the pool.
