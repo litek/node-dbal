@@ -10,7 +10,7 @@ var promise = require("bluebird"),
  *
  * @param {string} config
  */
-module.exports = function(config) {
+var dbal = module.exports = function(config) {
   var obj = function(table) {
     return obj.table(table);
   };
@@ -20,6 +20,8 @@ module.exports = function(config) {
   obj.tables = {};
   return obj;
 };
+
+dbal.sql = sql;
 
 /**
  * Run query and return connection to pool

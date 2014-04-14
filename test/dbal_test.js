@@ -12,6 +12,10 @@ describe("DBAL", function() {
     process.env.NODE_ENV = "test";
   });
 
+  it("exposes sql", function() {
+    dbal.sql.should.equal(sql);
+  });
+
   describe("query", function() {
     it("runs query and return", function(done) {
       this.db.query("SELECT 'bar' AS foo", function(err, res) {
