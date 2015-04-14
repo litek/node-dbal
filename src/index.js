@@ -1,157 +1,98 @@
-"use strict";
-var promise = require("bluebird"),
-    pg = require("pg"),
-    sql = require("sql"),
-    Node = require("sql/lib/node/index"),
-    DBAL = function() {};
+'use strict';
+var Promise = require('bluebird');
+var Sql = require('sql').Sql;
+var pg = require('pg');
+var Client = require('./client');
 
-/**
- * Create new DBAL object
- *
- * @param {string} config
- */
-var dbal = module.exports = function(config) {
-  var obj = function(table) {
-    return obj.table(table);
-  };
-
-  obj.__proto__ = DBAL.prototype;
-  obj.config = config;
-  obj.tables = {};
-  return obj;
-};
-
-dbal.sql = sql;
-
-DBAL.prototype.sql = sql;
-
-
-/**
- * Run query and return connection to pool
- *
- * @param {(string|Query)} query
- * @param {array} [params]
- * @param {function} [cb]
- */
-DBAL.prototype.query = function(query, params, cb) {
-  var defer = promise.defer();
-
-  if (query instanceof Node) {
-    var obj = query.toQuery();
-    query = obj.text;
-    params = obj.values;
-  } else if (!params) {
-    params = [];
-  } else if (typeof(params) === "function") {
-    cb = params;
-    params = [];
+var Dbal = function(url) {
+  if (!(this instanceof Dbal)) {
+    return new Dbal(url);
   }
 
-  pg.connect(this.config, function(err, client, done) {
-    if (err) {
-      done();
-      return defer.reject(err);
-    }
-
-    client.query(query, params, function(err, res) {
-      done();
-      if (err) return defer.reject(err);
-      defer.resolve(res);
-    });
-  });
-
-  return defer.promise.nodeify(cb);
+  this.url = url;
+  this.sql = new Sql();
+  this.tables = {};
 };
 
-/**
- * Get transaction
- */
-DBAL.prototype.transaction = function(cb) {
-  var defer = promise.defer();
+Dbal.prototype.generate = function(schema) {
+  var dbal = this;
+  var database = this.url.match(/[^\/]+$/)[0];
+  schema = schema || 'public';
 
-  pg.connect(this.config, function(err, client, done) {
-    client.release = done;
+  var query = 'SELECT table_name AS name, json_agg(column_name) AS columns '+
+              'FROM information_schema.columns '+
+              'WHERE table_catalog = $1 AND table_schema = $2 GROUP BY table_name';
 
-    client.commit = function() {
-      return client.query("COMMIT").then(function(res) {
-        client.release();
-        return res;
-      });
-    };
-
-    client.rollback = function() {
-      return client.query("ROLLBACK").then(function(res) {
-        client.release();
-        return res;
-      });
-    };
-
-    client.query = promise.promisify(client.query, client);
-
-    defer.resolve(client);
+  return dbal.all(query, [database, schema]).then(function(res) {
+    res.map(dbal.define, dbal);
   });
-
-  return defer.promise.nodeify(cb);
 };
 
-/**
- * Define/retrieve table
- *
- * @param {string|object} config
- */
-DBAL.prototype.table = function(config) {
-  var table, name;
-
-  if (typeof(config) !== "string") {
-    name = config.name;
-
-    if (typeof(this.tables[name]) !== "undefined") {
-      throw new Error("Table '"+name+"' is already defined");
-    }
-
-    table = sql.define(config);
-    table.__dbal = this;
-    this.tables[name] = table;
-
-  } else {
-    name = config;
-
-    if (typeof(this.tables[name]) === "undefined") {
-      throw new Error("Table '"+name+"' is undefined");
-    }
-
-    table = this.tables[name];
-  }
+Dbal.prototype.define = function(config) {
+  var table = this.sql.define(config);
+  table.__dbal = this;
+  this.tables[config.name] = table;
 
   return table;
 };
 
-/**
- * Execute query directly from Node
- *
- * @param {DBAL} [dbal]
- * @param {function} [cb]
- */
-var cls = require("pg/lib/client");
-Node.prototype.exec = function(dbal, cb) {
-  if (!cb && dbal && !(dbal instanceof DBAL) && !(dbal instanceof cls)) {
-    cb = dbal;
-    dbal = undefined;
-  }
-
-  if (!dbal) {
-    dbal = this.table.__dbal;
-  }
-
-  var q = this.toQuery();
-  return dbal.query(q.text, q.values, cb);
+Dbal.prototype.table = function(name) {
+  return this.tables[name];
 };
 
-/**
- * Direct promise call
- */
-Node.prototype.then = function() {
-  var promise = this.exec();
+Dbal.prototype.acquire = function() {
+  var self = this;
 
-  return promise.then.apply(promise, arguments);
+  return new Promise(function(resolve, reject) {
+    pg.connect(self.url, function(err, connection, done) {
+      if (err) {
+        done();
+        return reject(err);
+      }
+
+      var client = new Client(connection, done);
+      return resolve(client);
+    });
+  });
 };
+
+Dbal.prototype.begin = function() {
+  var client;
+
+  return this.acquire().then(function(res) {
+    client = res;
+    return client.run('BEGIN');
+
+  }).then(function() {
+    var done = client.done;
+    client.done = undefined;
+
+    ['commit', 'rollback'].forEach(function(key) {
+      client[key] = function() {
+        return client.run(key).then(function() {
+          return done.call(client);
+        });
+      };
+    });
+
+    return client;
+  });
+};
+
+['run', 'one', 'all'].forEach(function(key) {
+  Dbal.prototype[key] = function() {
+    var args = [].slice.call(arguments);
+    var client;
+
+    return this.acquire().then(function(res) {
+      client = res;
+      return client[key].apply(client, args);
+
+    }).then(function(res) {
+      client.done();
+      return res;
+    });
+  };
+});
+
+module.exports = Dbal;

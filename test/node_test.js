@@ -1,32 +1,33 @@
-"use strict";
+'use strict';
+var Dbal = require('../src/index');
+var Node = require('sql/lib/node');
 
-var dbal = require("../src/index"),
-    sql = require("sql");
-
-describe("sql.Node", function() {
+describe('sql.Node', function() {
   before(function() {
-    this.db = dbal();
-    this.table = sql.define({
-      name: "table",
-      columns: ["id", "name"]
+    this.dbal = new Dbal();
+    this.table = this.dbal.define({
+      name: 'table',
+      columns: ['id', 'name']
     });
   });
 
-  describe("query", function() {
-    it("executes query directly", function(done) {
-      this.table.select().exec(this.db).catch(function(err) {
-        err.code.should.equal("42P01");
+  describe('query', function() {
+    it('executes query with default adapter', function(done) {
+      this.table.select().run().catch(function(err) {
+        err.code.should.equal('42P01');
         done();
-      });
+      }.bind(this));
     });
 
-    it("is yieldable promise", function(done) {
-      this.table.__dbal = this.db;
-
-      this.table.select().then(function() {}, function(err) {
-        err.code.should.equal("42P01");
+    it('executes query with specified adapter', function(done) {
+      var dbal = new Dbal();
+      dbal.run = function(node) {
+        node.should.be.instanceof(Node);
         done();
-      });
+      };
+
+      dbal.should.not.equal(this.dbal);
+      this.table.select().run(dbal);
     });
   });
 });
