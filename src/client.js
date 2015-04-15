@@ -13,7 +13,7 @@ Client.prototype.done = function() {
 
   Object.keys(Client.prototype).forEach(function(key) {
     self[key] = function() {
-      throw new Error('Client connection has been returned to pool');
+      throw new Error('Client connection has been disconnected or returned to pool');
     };
   });
 };

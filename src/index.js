@@ -16,17 +16,24 @@ var Dbal = function(url) {
 };
 
 Dbal.prototype.generate = function(schema) {
-  var dbal = this;
   var database = this.url.match(/[^\/]+$/)[0];
   schema = schema || 'public';
 
-  var query = 'SELECT table_name AS name, json_agg(column_name) AS columns '+
-              'FROM information_schema.columns '+
-              'WHERE table_catalog = $1 AND table_schema = $2 GROUP BY table_name';
+  var dbal = this, client;
+  return dbal.client().then(function(res) {
+    client = res;
+    return client.all(
+      'SELECT table_name AS name, json_agg(column_name) AS columns ' +
+      'FROM information_schema.columns ' +
+      'WHERE table_catalog = $1 AND table_schema = $2 GROUP BY table_name',
+      [database, schema]
+    );
 
-  return dbal.all(query, [database, schema]).then(function(res) {
+  }).then(function(res) {
+    client.done();
     res.map(dbal.define, dbal);
 
+    // definitions are mutated when defined, just making sure they're minimal
     return res.map(function(row) {
       return {name: row.name, columns: row.columns};
     });
@@ -43,6 +50,23 @@ Dbal.prototype.define = function(config) {
 
 Dbal.prototype.table = function(name) {
   return this.tables[name];
+};
+
+Dbal.prototype.client = function() {
+  var connection = new this.pg.Client(this.url);
+
+  return new Promise(function(resolve, reject) {
+    connection.connect(function(err) {
+      if (err) {
+        // @todo Check if we should end the client
+        // connection.end();
+        return reject(err);
+      }
+
+      var client = new Client(connection, connection.end.bind(connection));
+      return resolve(client);
+    });
+  });
 };
 
 Dbal.prototype.acquire = function() {

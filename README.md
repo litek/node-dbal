@@ -80,6 +80,9 @@ Retrieve defined sql table node
 ### dbal.acquire()
 Acquire client from pool
 
+### dbal.client()
+Acquire standalone (non-pooled) client
+
 #### client.done()
 Release client back to pool
 
