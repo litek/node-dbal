@@ -10,6 +10,7 @@ var Dbal = function(url) {
   }
 
   this.url = url;
+  this.pg = pg;
   this.sql = new Sql();
   this.tables = {};
 };
