@@ -26,6 +26,10 @@ Dbal.prototype.generate = function(schema) {
 
   return dbal.all(query, [database, schema]).then(function(res) {
     res.map(dbal.define, dbal);
+
+    return res.map(function(row) {
+      return {name: row.name, columns: row.columns};
+    });
   });
 };
 
