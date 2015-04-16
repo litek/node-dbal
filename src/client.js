@@ -4,12 +4,12 @@ var Promise = require('bluebird');
 
 var Client = function(connection, done) {
   this.connection = connection;
-  this.done = done;
+  this._done = done;
 };
 
 Client.prototype.done = function() {
   var self = this;
-  this.done();
+  this._done();
 
   Object.keys(Client.prototype).forEach(function(key) {
     self[key] = function() {
