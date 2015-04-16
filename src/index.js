@@ -15,6 +15,7 @@ var Dbal = function(url) {
   this.tables = {};
 };
 
+// @todo Useful helper function, but should it be somewhere else?
 Dbal.prototype.generate = function(schema) {
   var database = this.url.match(/[^\/]+$/)[0];
   schema = schema || 'public';
@@ -85,25 +86,13 @@ Dbal.prototype.acquire = function() {
   });
 };
 
-Dbal.prototype.begin = function() {
+Dbal.prototype.transaction = function() {
   var client;
 
   return this.acquire().then(function(res) {
     client = res;
-    return client.run('BEGIN');
-
+    return client.begin();
   }).then(function() {
-    var done = client.done;
-    client.done = undefined;
-
-    ['commit', 'rollback'].forEach(function(key) {
-      client[key] = function() {
-        return client.run(key).then(function() {
-          return done.call(client);
-        });
-      };
-    });
-
     return client;
   });
 };

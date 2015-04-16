@@ -95,9 +95,20 @@ Release client back to pool
 #### client.one(query, params)
 #### client.one(node)
 
-### dbal.begin()
+#### client.begin()
+Begin transaction
+
+#### client.commit()
+Commit transaction
+
+#### client.rollback([savepoint])
+Rollback connection
+
+#### client.savepoint(savepoint)
+Set a transaction save point
+
+### dbal.transaction()
 Acquire a client from pool with a transaction started.
-done() is not supported, a transaction should either be explicitly rolled back or commited
 
 #### transaction.commit()
 Commit transaction, releasing client back to pool

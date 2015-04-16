@@ -18,6 +18,23 @@ Client.prototype.done = function() {
   });
 };
 
+Client.prototype.begin = function() {
+  return this.run('BEGIN');
+};
+
+Client.prototype.commit = function() {
+  return this.run('COMMIT');
+};
+
+Client.prototype.rollback = function(point) {
+  var q = 'ROLLBACK' + (point ? ' TO SAVEPOINT ' + point : '');
+  return this.run(q);
+};
+
+Client.prototype.savepoint = function(point) {
+  return this.run('SAVEPOINT ' + point);
+};
+
 Client.prototype.run = function(query, params) {
   var self = this;
   if (query instanceof Node) {
