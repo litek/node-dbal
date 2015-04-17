@@ -15,18 +15,28 @@ describe('DBAL', function() {
     it('returns a client instance', function(done) {
       this.db.acquire().then(function(client) {
         client.should.be.instanceof(Client);
+        client.done();
+
+        (function() {
+          client.done();
+        }).should.throw();
         done();
       }).catch(done);
     });
   });
 
-  describe('begins', function() {
+  describe('transaction', function() {
     it('starts a transaction', function(done) {
-      this.db.begin().then(function(client) {
-        client.should.be.instanceof(Client);
-        client.should.have.property('commit');
-        client.should.have.property('rollback');
-        should.equal(undefined, client.done);
+      var tid, client;
+
+      this.db.transaction().then(function(res) {
+        (client = res).should.be.instanceof(Client);
+        return client.one('SELECT txid_current() txid');
+      }).then(function(res) {
+        tid = res.txid;
+        return client.one('SELECT txid_current() txid');
+      }).then(function(res) {
+        res.txid.should.equal(tid);
         done();
       }).catch(done);
     });
