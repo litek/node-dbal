@@ -11,6 +11,15 @@ describe('DBAL', function() {
     process.env.NODE_ENV = 'test';
   });
 
+  describe('client', function() {
+    it('returns a standalone client instance', function(done) {
+      this.db.client().then(function(client) {
+        client.done();
+        done();
+      }).catch(done);
+    });
+  });
+
   describe('acquire', function() {
     it('returns a client instance', function(done) {
       this.db.acquire().then(function(client) {
