@@ -40,12 +40,12 @@ describe('DBAL', function() {
 
       this.db.transaction().then(function(res) {
         (client = res).should.be.instanceof(Client);
-        return client.one('SELECT txid_current() txid');
+        return client.run('SELECT txid_current() txid').row();
       }).then(function(res) {
         tid = res.txid;
-        return client.one('SELECT txid_current() txid');
-      }).then(function(res) {
-        res.txid.should.equal(tid);
+        return client.run('SELECT txid_current() txid').col();
+      }).then(function(txid) {
+        txid.should.equal(tid);
         done();
       }).catch(done);
     });
@@ -63,7 +63,7 @@ describe('DBAL', function() {
 
   describe('all', function() {
     it('returns all rows', function(done) {
-      this.db.all("SELECT 'bar' AS foo").then(function(res) {
+      this.db.run("SELECT 'bar' AS foo").all().then(function(res) {
         res.should.be.instanceof(Array).and.have.length(1);
         res[0].should.have.property('foo').and.equal('bar');
         done();
@@ -71,12 +71,21 @@ describe('DBAL', function() {
     });
   });
 
-  describe('one', function() {
+  describe('row', function() {
     it('returns first row', function(done) {
-      this.db.one("SELECT 'bar' AS foo").then(function(res) {
+      this.db.run("SELECT 'bar' AS foo").row().then(function(res) {
         res.should.eql({foo: 'bar'});
         done();
       }).catch(done);
     });
   });
+
+  describe('column', function() {
+    it('returns first column', function(done) {
+      this.db.run("SELECT 'bar' AS foo").col().then(function(res) {
+        res.should.eql('bar');
+        done();
+      }).catch(done);
+    });
+  })
 });

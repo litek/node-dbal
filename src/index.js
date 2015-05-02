@@ -3,6 +3,7 @@ var Promise = require('bluebird');
 var Sql = require('sql').Sql;
 var pg = require('pg');
 var Client = require('./client');
+var result = require('./result');
 
 var Dbal = function(url) {
   if (!(this instanceof Dbal)) {
@@ -50,6 +51,10 @@ Dbal.prototype.define = function(config) {
 };
 
 Dbal.prototype.table = function(name) {
+  if (!this.tables[name]) {
+    throw new Error('Undefined table ' + name);
+  }
+
   return this.tables[name];
 };
 
@@ -97,20 +102,19 @@ Dbal.prototype.transaction = function() {
   });
 };
 
-['run', 'one', 'all'].forEach(function(key) {
-  Dbal.prototype[key] = function() {
-    var args = [].slice.call(arguments);
-    var client;
+Dbal.prototype.run = function() {
+  var args = [].slice.call(arguments);
+  var client;
 
-    return this.acquire().then(function(res) {
-      client = res;
-      return client[key].apply(client, args);
+  var p = this.acquire().then(function(res) {
+    client = res;
+    return client.run.apply(client, args);
+  }).then(function(res) {
+    client.done();
+    return res;
+  });
 
-    }).then(function(res) {
-      client.done();
-      return res;
-    });
-  };
-});
+  return result.promise(p);
+};
 
 module.exports = Dbal;

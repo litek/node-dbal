@@ -14,11 +14,11 @@ db.run(query).then(function(res) {
   // res.rows[0].foo equals bar
 });
 
-db.all(query).then(function(res) {
+db.run(query).all().then(function(res) {
   // res equals the rows array
 });
 
-db.one(query).then(function(res) {
+db.run(query).row().then(function(res) {
   // res equals the first entry in the rows array
 });
 
@@ -44,9 +44,10 @@ var quotes = db.define({
 db.table('quotes')
   .insert({author: 'Caesar', quote: 'Veni, vidi, vici'})
   .returning('id')
-  .one()
-  .then(function(res) {
-    // assuming id is a sequence, res.id is the generated value
+  .run()
+  .column()
+  .then(function(id) {
+    // assuming id is a sequence, id is the generated value
   });
 ```
 
@@ -59,14 +60,6 @@ Create new Dbal with connection string.
 ### dbal.run(node)
 Acquires a client, runs a query, then releases client back to pool and returns results  
 
-### dbal.all(query, params)
-### dbal.all(node)
-Run query and return all rows
-
-### dbal.one(query, params)
-### dbal.one(node)
-Run query and return first row
-
 ### dbal.define(config)
 Define table for sql
 
@@ -74,8 +67,6 @@ Define table for sql
 Retrieve defined sql table node
 
 #### node.run([dbal])
-#### node.all([dbal])
-#### node.one([dbal])
 
 ### dbal.acquire()
 Acquire client from pool
@@ -89,11 +80,9 @@ Release client back to pool
 #### client.run(query, params)
 #### client.run(node)
 
-#### client.all(query, params)
-#### client.all(node)
-
-#### client.one(query, params)
-#### client.one(node)
+##### result.all()
+##### result.row()
+##### result.column()
 
 #### client.begin()
 Begin transaction
@@ -118,9 +107,3 @@ Rollback transaction, releasing client back to pool
 
 #### transaction.run(query, params)
 #### transaction.run(node)
-
-#### transaction.all(query, params)
-#### transaction.all(node)
-
-#### transaction.one(query, params)
-#### transaction.one(node)

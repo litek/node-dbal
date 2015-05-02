@@ -14,7 +14,7 @@
     "should": "^6.0.1"
   },
   "dependencies": {
-    "bluebird": "^2.9.24",
+    "bluebird": "^2.9.25",
     "sql": "^0.50.0"
   },
   "scripts": {
