@@ -43,7 +43,7 @@ describe('DBAL', function() {
         return client.run('SELECT txid_current() txid').row();
       }).then(function(res) {
         tid = res.txid;
-        return client.run('SELECT txid_current() txid').col();
+        return client.run('SELECT txid_current() txid').column();
       }).then(function(txid) {
         txid.should.equal(tid);
         done();
@@ -82,10 +82,21 @@ describe('DBAL', function() {
 
   describe('column', function() {
     it('returns first column', function(done) {
-      this.db.run("SELECT 'bar' AS foo").col().then(function(res) {
+      this.db.run("SELECT 'bar' AS foo").column().then(function(res) {
         res.should.eql('bar');
         done();
       }).catch(done);
     });
-  })
+  });
+
+  describe('assign', function() {
+    it('copies first row to object', function(done) {
+      var obj = {id: 1};
+      this.db.run("SELECT 'bar' AS foo, 'qux' AS baz").assign(obj).then(function(res) {
+        obj.should.equal(res);
+        obj.should.have.properties('id', 'foo', 'baz');
+        done();
+      }).catch(done);
+    });
+  });
 });

@@ -83,6 +83,7 @@ Release client back to pool
 ##### result.all()
 ##### result.row()
 ##### result.column()
+##### result.assign(target)
 
 #### client.begin()
 Begin transaction
