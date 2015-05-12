@@ -1,6 +1,8 @@
 'use strict';
-var Dbal = require('../src/index');
-var Node = require('sql/lib/node');
+var expect = require('chai').expect;
+var Node = require('sql/lib/node/index');
+var sql = require('../lib/sql');
+var Dbal = require('../lib/dbal');
 
 describe('sql.Node', function() {
   before(function() {
@@ -14,19 +16,19 @@ describe('sql.Node', function() {
   describe('query', function() {
     it('executes query with default adapter', function(done) {
       this.table.select().run().catch(function(err) {
-        err.code.should.equal('42P01');
+        expect(err.code).equal('42P01');
         done();
       }.bind(this));
     });
 
     it('executes query with specified adapter', function(done) {
-      var dbal = new Dbal();
-      dbal.run = function(node) {
-        node.should.be.instanceof(Node);
-        done();
+      var dbal = {
+        run: function(node) {
+          expect(node).instanceof(Node);
+          done();
+        }
       };
-
-      dbal.should.not.equal(this.dbal);
+      
       this.table.select().run(dbal);
     });
   });

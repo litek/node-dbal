@@ -1,100 +1,63 @@
 'use strict';
-var should = require('should');
-var pg = require('pg');
-var Sql = require('sql').Sql;
-var Dbal = require('../src/index');
-var Client = require('../src/client');
+var expect = require('chai').expect;
+var Dbal = require('../lib/dbal');
 
-describe('DBAL', function() {
-  before(function() {
-    this.db = new Dbal(process.env.DATABASE_URL);
-    process.env.NODE_ENV = 'test';
-  });
-
-  describe('client', function() {
-    it('returns a standalone client instance', function(done) {
-      this.db.client().then(function(client) {
-        client.done();
-        done();
-      }).catch(done);
+describe('Dbal', function() {
+  describe('.acquire', function() {
+    it('acquires pooled client', function() {
+      var dbal = Dbal();
+      var client = dbal.acquire();
+      client.connect().then(function() {
+        var count = Object.keys(dbal.pg.pools.all).length;
+        expect(count).equal(1);
+        client.end();
+        expect(count).equal(0);
+      });
     });
   });
 
-  describe('acquire', function() {
-    it('returns a client instance', function(done) {
-      this.db.acquire().then(function(client) {
-        client.should.be.instanceof(Client);
-        client.done();
-
-        (function() {
-          client.done();
-        }).should.throw();
-        done();
-      }).catch(done);
+  describe('.client', function() {
+    it('acquires standalone client', function() {
+      var dbal = Dbal();
+      var client = dbal.client();
+      client.connect().then(function() {
+        var count = Object.keys(dbal.pg.pools.all).length;
+        expect(count).equal(0);
+        client.end();
+      });
     });
   });
 
-  describe('transaction', function() {
-    it('starts a transaction', function(done) {
-      var tid, client;
-
-      this.db.transaction().then(function(res) {
-        (client = res).should.be.instanceof(Client);
-        return client.run('SELECT txid_current() txid').row();
-      }).then(function(res) {
-        tid = res.txid;
-        return client.run('SELECT txid_current() txid').column();
-      }).then(function(txid) {
-        txid.should.equal(tid);
+  describe('.run', function() {
+    it('runs query returning to pool', function(done) {
+      var dbal = Dbal();
+      dbal.run('SELECT 1').then(function(res) {
+        expect(res.rowCount).equal(1);
         done();
       }).catch(done);
     });
-  });
 
-  describe('run', function() {
-    it('runs query with promise', function(done) {
-      this.db.run("SELECT 'bar' AS foo").then(function(res) {
-        res.should.have.property('rows').and.have.length(1);
-        res.rows[0].should.have.property('foo').and.equal('bar');
+    it('throws on error', function(done) {
+      var dbal = Dbal();
+      dbal.run('SELECT * FROM "nonexistant"').then(done).catch(function(err) {
+        expect(err.code).equal('42P01');
+        done();
+      });
+    });
+
+    it('attaches .all promise', function(done) {
+      var dbal = Dbal();
+      dbal.run('SELECT * FROM generate_series(1,5)').all().then(function(rows) {
+        expect(rows).instanceof(Array).length(5);
         done();
       }).catch(done);
     });
-  });
 
-  describe('all', function() {
-    it('returns all rows', function(done) {
-      this.db.run("SELECT 'bar' AS foo").all().then(function(res) {
-        res.should.be.instanceof(Array).and.have.length(1);
-        res[0].should.have.property('foo').and.equal('bar');
-        done();
-      }).catch(done);
-    });
-  });
-
-  describe('row', function() {
-    it('returns first row', function(done) {
-      this.db.run("SELECT 'bar' AS foo").row().then(function(res) {
-        res.should.eql({foo: 'bar'});
-        done();
-      }).catch(done);
-    });
-  });
-
-  describe('column', function() {
-    it('returns first column', function(done) {
-      this.db.run("SELECT 'bar' AS foo").column().then(function(res) {
-        res.should.eql('bar');
-        done();
-      }).catch(done);
-    });
-  });
-
-  describe('assign', function() {
-    it('copies first row to object', function(done) {
-      var obj = {id: 1};
-      this.db.run("SELECT 'bar' AS foo, 'qux' AS baz").assign(obj).then(function(res) {
-        obj.should.equal(res);
-        obj.should.have.properties('id', 'foo', 'baz');
+    it('attaches .one promise', function(done) {
+      var dbal = Dbal();
+      dbal.run("SELECT 'foo' as bar").one().then(function(row) {
+        expect(row).all.keys('bar');
+        expect(row.bar).equal('foo');
         done();
       }).catch(done);
     });

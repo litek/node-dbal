@@ -2,22 +2,22 @@
   "name": "dbal",
   "version": "0.3.0",
   "author": "Ketil Albertsen",
-  "main": "src/index.js",
+  "main": "lib/dbal.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/litek/node-dbal.git"
   },
   "homepage": "https://github.com/litek/node-dbal",
   "devDependencies": {
+    "chai": "^2.3.0",
     "mocha": "^2.2.4",
-    "pg": "^4.3.0",
-    "should": "^6.0.1"
+    "pg": "^4.3.0"
   },
   "dependencies": {
     "bluebird": "^2.9.25",
-    "sql": "^0.50.0"
+    "sql": "^0.51.0"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha -R spec -b"
   }
 }
