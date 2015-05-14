@@ -5,9 +5,11 @@ var sql = require('../lib/sql');
 var Dbal = require('../lib/dbal');
 
 describe('sql.Node', function() {
+  var dbal, table;
+
   before(function() {
-    this.dbal = new Dbal();
-    this.table = this.dbal.define({
+    dbal = new Dbal();
+    table = dbal.define({
       name: 'table',
       columns: ['id', 'name']
     });
@@ -16,7 +18,7 @@ describe('sql.Node', function() {
   ['run', 'all', 'one'].forEach(function(method) {
     describe('.'+method, function() {
       it('executes query with default adapter', function(done) {
-        this.table.select()[method]().catch(function(err) {
+        table.select().run().catch(function(err) {
           expect(err.code).equal('42P01');
           done();
         }.bind(this));
@@ -29,7 +31,7 @@ describe('sql.Node', function() {
           done();
         };
         
-        this.table.select()[method](dbal);
+        table.select()[method](dbal);
       });
     });
   });

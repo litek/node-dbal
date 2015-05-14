@@ -6,8 +6,17 @@ describe('Dbal', function() {
   var dbal;
 
   beforeEach(function() {
-    dbal = new Dbal();
+    dbal = new Dbal('postgres://localhost/postgres');
     dbal.pg.end();
+  });
+
+  describe('.table', function() {
+    it('adds columns dynamically', function() {
+      var users = dbal.define({name: 'users', columns: ['id']});
+      expect(users.id).an('object');
+      dbal.define('users', ['email']);
+      expect(users.email).an('object');
+    });
   });
 
   describe('.client', function() {
