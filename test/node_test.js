@@ -18,7 +18,7 @@ describe('sql.Node', function() {
   ['run', 'all', 'one'].forEach(function(method) {
     describe('.'+method, function() {
       it('executes query with default adapter', function(done) {
-        table.select().run().catch(function(err) {
+        table.select()[method]().catch(function(err) {
           expect(err.code).equal('42P01');
           done();
         }.bind(this));
@@ -34,5 +34,11 @@ describe('sql.Node', function() {
         table.select()[method](dbal);
       });
     });
+  });
+
+  it('adds columns on demand', function() {
+    expect(table.hasColumn('fresh')).equal(false);
+    table.get('fresh');
+    expect(table.hasColumn('fresh')).equal(true);
   });
 });
