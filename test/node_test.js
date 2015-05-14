@@ -13,23 +13,24 @@ describe('sql.Node', function() {
     });
   });
 
-  describe('query', function() {
-    it('executes query with default adapter', function(done) {
-      this.table.select().run().catch(function(err) {
-        expect(err.code).equal('42P01');
-        done();
-      }.bind(this));
-    });
+  ['run', 'all', 'one'].forEach(function(method) {
+    describe('.'+method, function() {
+      it('executes query with default adapter', function(done) {
+        this.table.select()[method]().catch(function(err) {
+          expect(err.code).equal('42P01');
+          done();
+        }.bind(this));
+      });
 
-    it('executes query with specified adapter', function(done) {
-      var dbal = {
-        run: function(node) {
+      it('executes query with specified adapter', function(done) {
+        var dbal = {};
+        dbal[method] = function(node) {
           expect(node).instanceof(Node);
           done();
-        }
-      };
-      
-      this.table.select().run(dbal);
+        };
+        
+        this.table.select()[method](dbal);
+      });
     });
   });
 });

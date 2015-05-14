@@ -6,7 +6,7 @@ describe('Dbal', function() {
   var dbal;
 
   beforeEach(function() {
-    dbal = Dbal();
+    dbal = new Dbal();
     dbal.pg.end();
   });
 
