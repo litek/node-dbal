@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "bluebird": "^2.9.25",
-    "sql": "^0.57.0"
+    "sql": "^0.58.0"
   },
   "scripts": {
     "test": "mocha -R spec -b"
