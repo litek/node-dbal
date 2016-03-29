@@ -1,23 +1,38 @@
 {
   "name": "dbal",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "author": "Ketil Albertsen",
-  "main": "lib/dbal.js",
+  "main": "lib/connection.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/litek/node-dbal.git"
   },
   "homepage": "https://github.com/litek/node-dbal",
   "devDependencies": {
-    "chai": "^3.4.1",
-    "mocha": "^2.3.4",
-    "pg": "^4.4.3"
+    "chai": "^3.5.0",
+    "istanbul": "^0.4.2",
+    "jshint": "^2.9.1",
+    "mocha": "^2.4.5",
+    "pg": "^4.5.1",
+    "pg-native": "^1.10.0"
   },
   "dependencies": {
-    "bluebird": "^3.1.1",
-    "sql": "^0.64.1"
+    "bluebird": "^3.3.4",
+    "sql": "^0.67.0"
   },
   "scripts": {
-    "test": "mocha -R spec -b"
+    "test": "istanbul cover _mocha --dir test/coverage -- --reporter spec --bail",
+    "lint": "jshint {lib,test}/**/*.js"
+  },
+  "license": "MIT",
+  "jshintConfig": {
+    "browser": false,
+    "node": true,
+    "mocha": true,
+    "asi": true,
+    "esnext": true,
+    "globals": {
+      "Promise": true
+    }
   }
 }
