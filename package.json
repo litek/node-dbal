@@ -1,9 +1,8 @@
 {
   "name": "dbal",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0",
   "author": "Ketil Albertsen",
   "main": "build/index.js",
-  "typings": "build/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git://github.com/litek/node-dbal.git"
