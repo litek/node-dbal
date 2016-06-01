@@ -35,4 +35,17 @@ export class Client extends Adapter {
       })
     })
   }
+  
+  /**
+   * Prepare a query
+   */
+  prepare(text: string) {
+    let name = Date.now() + '-' + Math.random()
+    
+    return {
+      run: (values?: any[]) => this.run({name, text, values}),
+      all: (values?: any[]) => this.all({name, text, values}),
+      one: (values?: any[]) => this.one({name, text, values})
+    }
+  }
 }

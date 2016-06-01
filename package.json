@@ -1,6 +1,6 @@
 {
   "name": "dbal",
-  "version": "1.0.0",
+  "version": "1.0.0-alpha.4",
   "author": "Ketil Albertsen",
   "main": "build/index.js",
   "repository": {
@@ -19,7 +19,7 @@
   },
   "scripts": {
     "build": "rm -rf build && tsc",
-    "prepublish": "tsc",
+    "prepublish": "npm run build",
     "test": "mocha build/test",
     "watch": "tsc --watch"
   },

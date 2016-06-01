@@ -54,6 +54,14 @@ describe('Connection', function() {
       expect(client.pooled).equals(false)
       client.end()
     })
+    
+    describe('.prepare', function() {
+      it('prepares a query for running', async function() {
+        let client: Client = await this.db.client()
+        let rows = await client.prepare('SELECT * FROM test').all()
+        expect(rows).instanceof(Array).length(3)
+      })
+    })
   })
   
   describe('.sql', function() {
