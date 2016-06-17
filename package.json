@@ -1,21 +1,25 @@
 {
   "name": "dbal",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-alpha.5",
   "author": "Ketil Albertsen",
   "main": "build/index.js",
+  "typings": "build/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git://github.com/litek/node-dbal.git"
   },
   "homepage": "https://github.com/litek/node-dbal",
+  "dependencies": {
+    "@types/node": "^4.0.22-alpha",
+    "@types/pg": "0.0.22-alpha",
+    "pg": "^4.5.5"
+  },
   "devDependencies": {
+    "@types/chai": "^3.4.22-alpha",
+    "@types/mocha": "^2.2.21-alpha",
     "chai": "^3.5.0",
     "mocha": "^2.5.3",
-    "typescript": "^1.8.10",
-    "typings": "^1.0.4"
-  },
-  "dependencies": {
-    "pg": "^4.5.5"
+    "typescript": "^1.9.0-dev.20160617-1.0"
   },
   "scripts": {
     "build": "rm -rf build && tsc",

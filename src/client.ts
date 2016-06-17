@@ -21,7 +21,7 @@ export class Client extends Adapter {
   /**
    * Run query and return raw result set
    */
-  run(text: pg.QueryConfig | string, values?: any[]): Promise<pg.ResultSet> {
+  run(text: pg.QueryConfig | string, values?: any[]): Promise<pg.QueryResult> {
     let query: pg.QueryConfig = typeof(text) === 'string' ? {text: <string>text, values} : <pg.QueryConfig>text 
     
     return new Promise((resolve, reject) => {

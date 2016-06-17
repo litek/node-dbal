@@ -5,14 +5,14 @@ import {Client} from './client'
 import {Sql} from './sql'
 
 export class Connection extends Adapter {
-  private pool: pg.ClientPool
+  private pool: any
   
   /**
    * Create new connection object
    */
-  constructor(private config: pg.Config | string) {
+  constructor(private config: pg.ConnectionConfig | string) {
     super()
-    this.pool = pg.pools.getOrCreate(config)
+    this.pool = (<any>pg).pools.getOrCreate(config)
   }
   
   /**
@@ -20,7 +20,7 @@ export class Connection extends Adapter {
    */
   acquire(): Promise<Client> {
     return new Promise((resolve, reject) => {
-      this.pool.acquire((err, client) => {
+      this.pool.acquire((err: Error, client: pg.Client) => {
         let done = this.pool.release.bind(this.pool, client)
         err ? reject(err) : resolve(new Client(client, done))
       })
@@ -49,11 +49,11 @@ export class Connection extends Adapter {
   /**
    * Run query and return raw result set
    */
-  run(text: pg.QueryConfig | string, values?: any[]): Promise<pg.ResultSet> {
+  run(text: pg.QueryConfig | string, values?: any[]): Promise<pg.QueryResult> {
     let query: pg.QueryConfig = typeof(text) === 'string' ? {text: <string>text, values} : <pg.QueryConfig>text 
     
     return new Promise((resolve, reject) => {
-      this.pool.acquire((err, client) => {
+      this.pool.acquire((err: Error, client: pg.Client) => {
         if (err) return reject(err)
         
         client.query(<pg.QueryConfig>query, (err, res) => {

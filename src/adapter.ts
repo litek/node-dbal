@@ -12,7 +12,7 @@ export abstract class Adapter {
   /**
    * Run query and return raw result set
    */
-  abstract run(text: pg.QueryConfig | string, values?: any[]): Promise<pg.ResultSet>
+  abstract run(text: pg.QueryConfig | string, values?: any[]): Promise<pg.QueryResult>
   
   /**
    * Get all rows from result set
